@@ -1,4 +1,4 @@
-package pieces;
+package board;
 
 public class Position {
 	private int rank;
