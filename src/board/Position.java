@@ -4,7 +4,7 @@ public class Position {
 	private int rank;
 	private int file;
 
-	public Position(int rank, int file) {
+	public Position(int file, int rank) {
 		this.rank = rank;
 		this.file = file;
 	}

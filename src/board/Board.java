@@ -28,7 +28,8 @@ public class Board {
 	/**
 	 * This will create a new board, the board is represented with 12 longs with
 	 * [color][type] from commons. So to access the white king you do
-	 * board[Commons.Color.WHITE][Commons.PieceType.KING]. This will return the bitmap of the king.
+	 * board[Commons.Color.WHITE][Commons.PieceType.KING]. This will return the
+	 * bitmap of the king.
 	 * 
 	 * @return a board in the start position
 	 */
@@ -52,7 +53,8 @@ public class Board {
 	 * This will return a bitmap with all positions that is occupied
 	 * 
 	 * @param board
-	 * @return the bitmap of the board (in order words occupied squares on the board).
+	 * @return the bitmap of the board (in order words occupied squares on the
+	 *         board).
 	 */
 
 	public static long getBitMap(long[][] board) {
@@ -63,14 +65,15 @@ public class Board {
 		}
 		return bitmap;
 	}
-	
+
 	/**
 	 * Get bitmap for a specific type of piece
+	 * 
 	 * @param board
 	 * @param type
 	 * @return the bitmap of the type
 	 */
-	
+
 	public static long getBitMapForType(long[][] board, int type) {
 		long bitmap = 0;
 		for (int i = 0; i < 6; i++) {
@@ -79,14 +82,15 @@ public class Board {
 		}
 		return bitmap;
 	}
-	
+
 	/**
 	 * Get the bitmap for a specific color
+	 * 
 	 * @param board
 	 * @param color
 	 * @return
 	 */
-	
+
 	public static long getBitMapForColor(long[][] board, int color) {
 		long bitmap = 0;
 		for (int i = 0; i < 6; i++) {
@@ -94,7 +98,6 @@ public class Board {
 		}
 		return bitmap;
 	}
-	
 
 	/**
 	 * This will return the index to use in the mask array to get a mask for
@@ -151,6 +154,29 @@ public class Board {
 		}
 
 		return str;
+	}
+
+	public static long[][] setPieceAtPosition(long[][] board, Position pos,
+			int type, int color) {
+		board[color][type] = board[color][type] | getMaskAtPosition(pos);
+		return board;
+
+	}
+
+	public static int getPieceAtPosition(long[][] board, Position pos) {
+		for (int i = 0; i < 6; i++) {
+
+			if ((board[Commons.Color.WHITE][i] & getMaskAtPosition(pos)) != 0) {
+				return i;
+			}
+
+			if ((board[Commons.Color.BLACK][i] & getMaskAtPosition(pos)) != 0) {
+				return i;
+			}
+		}
+
+		return -1;
+
 	}
 
 }

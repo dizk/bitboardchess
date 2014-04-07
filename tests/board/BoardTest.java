@@ -72,14 +72,14 @@ public class BoardTest {
 	public void testGetMaskAtPosition(){
 		// Testing some positions it is only powers of two anyway ^^
 		assertEquals(1L, Board.getMaskAtPosition(new Position(0, 0)));
-		assertEquals(2L, Board.getMaskAtPosition(new Position(0, 1)));
-		assertEquals(4L, Board.getMaskAtPosition(new Position(0, 2)));
-		assertEquals(8L, Board.getMaskAtPosition(new Position(0, 3)));
-		assertEquals(16L, Board.getMaskAtPosition(new Position(0, 4)));
-		assertEquals(32L, Board.getMaskAtPosition(new Position(0, 5)));
-		assertEquals(64L, Board.getMaskAtPosition(new Position(0, 6)));
-		assertEquals(128L, Board.getMaskAtPosition(new Position(0, 7)));
-		assertEquals(256L, Board.getMaskAtPosition(new Position(1, 0)));
+		assertEquals(2L, Board.getMaskAtPosition(new Position(1, 0)));
+		assertEquals(4L, Board.getMaskAtPosition(new Position(2, 0)));
+		assertEquals(8L, Board.getMaskAtPosition(new Position(3, 0)));
+		assertEquals(16L, Board.getMaskAtPosition(new Position(4, 0)));
+		assertEquals(32L, Board.getMaskAtPosition(new Position(5, 0)));
+		assertEquals(64L, Board.getMaskAtPosition(new Position(6, 0)));
+		assertEquals(128L, Board.getMaskAtPosition(new Position(7, 0)));
+		assertEquals(256L, Board.getMaskAtPosition(new Position(0, 1)));
 		assertEquals(512L, Board.getMaskAtPosition(new Position(1, 1)));
 	}
 	
@@ -128,6 +128,79 @@ public class BoardTest {
 		
 		
 	}
+	
+	@Test
+	public void testSetPieceAtPosition(){
+		Position pos = new Position(3, 3);
+		
+		board = Board.setPieceAtPosition(board, pos, Commons.PieceType.PAWN, Commons.Color.WHITE);
+		
+		long bitmap = Board.getBitMap(board) & Board.getMaskAtPosition(pos);
+		
+		assertEquals((long) Math.pow(2, 27), bitmap);
+		
+		
+	}
+	
+	@Test
+	public void testGetPieceTypeAtPosition(){
+		Position pos = new Position(2, 1);
+		
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(4, 0);
+		
+		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(4, 7);
+		
+		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(7, 0);
+		
+		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(7, 7);
+		
+		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(3, 0);
+		
+		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos));
+	
+		pos = new Position(3, 7);
+		
+		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(5, 0);
+		
+		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos));
+	
+		pos = new Position(2, 7);
+		
+		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos));
+	
+		pos = new Position(1, 0);
+		
+		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(6, 7);
+		
+		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos));
+	
+		pos = new Position(5, 1);
+		
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(2, 6);
+		
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		
+		pos = new Position(0, 1);
+		
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+	}
+	
 	
 	
 	
