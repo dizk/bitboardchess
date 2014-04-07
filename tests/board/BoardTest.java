@@ -1,4 +1,5 @@
 package board;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
@@ -6,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.Commons;
+import board.Board;
+import board.Position;
 
 
 public class BoardTest {
@@ -146,59 +149,59 @@ public class BoardTest {
 	public void testGetPieceTypeAtPosition(){
 		Position pos = new Position(2, 1);
 		
-		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 		
 		pos = new Position(4, 0);
 		
-		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 		
 		pos = new Position(4, 7);
 		
-		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.KING, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 		
 		pos = new Position(7, 0);
 		
-		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 		
 		pos = new Position(7, 7);
 		
-		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 		
 		pos = new Position(3, 0);
 		
-		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 	
 		pos = new Position(3, 7);
 		
-		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.QUEEN, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 		
 		pos = new Position(5, 0);
 		
-		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 	
 		pos = new Position(2, 7);
 		
-		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.BISHOP, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 	
 		pos = new Position(1, 0);
 		
-		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 		
 		pos = new Position(6, 7);
 		
-		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.KNIGHT, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 	
 		pos = new Position(5, 1);
 		
-		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 		
 		pos = new Position(2, 6);
 		
-		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos, Commons.Color.WHITE));
 		
 		pos = new Position(0, 1);
 		
-		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos));
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtPosition(board, pos, Commons.Color.BLACK));
 	}
 	
 	

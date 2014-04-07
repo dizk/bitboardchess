@@ -1,10 +1,14 @@
 package board;
 
+import java.io.Serializable;
+
 import utils.Commons;
 
-public class Board {
+public class Board implements Serializable{
 
-	private static long[] masks;
+	private static final long serialVersionUID = -6005457724438400528L;
+	
+	public static long[] masks;
 
 	public Board() {
 		createMasks();
@@ -141,16 +145,16 @@ public class Board {
 
 		for (int i = 1; i <= 64; i++) {
 			if ((bitmap & 1) == 1) {
-				str += "1";
+				str += "1 ";
 			} else {
-				str += "0";
+				str += "0 ";
 			}
 
 			if ((i % 8) == 0) {
 				str += "\n";
 			}
 
-			bitmap = bitmap >>> 1;
+			bitmap = bitmap >> 1;
 		}
 
 		return str;
@@ -163,20 +167,13 @@ public class Board {
 
 	}
 
-	public static int getPieceAtPosition(long[][] board, Position pos) {
-		for (int i = 0; i < 6; i++) {
-
-			if ((board[Commons.Color.WHITE][i] & getMaskAtPosition(pos)) != 0) {
-				return i;
+	public static int getPieceAtPosition(long[][] board, Position pos, int color) {
+			for(int i = 0; i < 6; i++){
+				if ((board[color][i] & getMaskAtPosition(pos)) != 0) {
+					return i;
+				}				
 			}
-
-			if ((board[Commons.Color.BLACK][i] & getMaskAtPosition(pos)) != 0) {
-				return i;
-			}
-		}
-
 		return -1;
-
 	}
 
 }

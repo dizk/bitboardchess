@@ -10,7 +10,10 @@ public class Runner {
 		Position pos = new Position(0, 2);
 		long withextraPawn = Board.getBitMap(Board.setPieceAtPosition(board, pos, Commons.PieceType.PAWN, Commons.Color.WHITE));
 		
-		System.out.println(Board.getString(withextraPawn));
+		int index = 63;
+		//System.out.println(Board.getString(withextraPawn));
+		System.out.println(Board.getString(Board.masks[index]));
+		System.out.println(Board.getString(Commons.ROOK_ATTACKS[index]));
 	}
 
 }
