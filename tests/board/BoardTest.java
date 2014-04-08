@@ -205,7 +205,12 @@ public class BoardTest {
 	}
 	
 	
-	
+	@Test
+	public void testGetDirectionFromTo(){
+		
+		
+		
+	}
 	
 	
 

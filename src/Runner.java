@@ -6,16 +6,10 @@ import board.Position;
 public class Runner {
 	
 	public static void main(String[] args) {
-		long[][] board = Board.initBitBoard();
-		Position pos = new Position(0, 2);
-		long withextraPawn = Board.getBitMap(Board.setPieceAtPosition(board, pos, Commons.PieceType.PAWN, Commons.Color.WHITE));
+		Board.initBitBoard();
 		
 	
-		//System.out.println(Board.getString(withextraPawn));
-		for(int index = 0; index < 64; index++){
-			System.out.println(Board.getString(Board.masks[index]));
-			System.out.println(Board.getString(Commons.QUEEN_ATTACKS[index]));
-		}
+		System.out.println(Board.getString(Commons.Bitmaps.BEHINDMAP[9][18]));
 	}
 
 }

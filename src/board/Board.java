@@ -4,11 +4,12 @@ import java.io.Serializable;
 
 import utils.Commons;
 
-public class Board implements Serializable{
+public class Board implements Serializable {
 
 	private static final long serialVersionUID = -6005457724438400528L;
-	
+
 	public static long[] masks;
+
 
 	public Board() {
 		createMasks();
@@ -125,12 +126,23 @@ public class Board implements Serializable{
 	public static long getMaskAtPosition(Position pos) {
 		int index = getIndexAtPosition(pos);
 
-		if (-1 < index && index < 64) {
+		if (isValidIndex(index)) {
 			return Board.masks[index];
 		}
 
 		return -1;
 
+	}
+
+	/**
+	 * Check if a square index is valid
+	 * 
+	 * @param index
+	 * @return true or false
+	 */
+
+	public static boolean isValidIndex(int index) {
+		return -1 < index && index < 64;
 	}
 
 	/**
@@ -168,12 +180,127 @@ public class Board implements Serializable{
 	}
 
 	public static int getPieceAtPosition(long[][] board, Position pos, int color) {
-			for(int i = 0; i < 6; i++){
-				if ((board[color][i] & getMaskAtPosition(pos)) != 0) {
-					return i;
-				}				
+		for (int i = 0; i < 6; i++) {
+			if ((board[color][i] & getMaskAtPosition(pos)) != 0) {
+				return i;
 			}
+		}
 		return -1;
 	}
 
+	public static long setBit(long bitmap, int index) {
+		long b = bitmap | Board.masks[index];
+		return b;
+	}
+	
+	
+	//
+	// CODE BELOW HERE IS NOT IN USE. IT IS FOR GENERATING BEHIND BITMAPS
+	//
+	
+
+	// Behind array with behind[from][to];
+	public static long[][] behind;
+	
+
+	/**
+	 * Init one of the behind bitmaps
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+
+	public static long behindInit(int from, int to) {
+
+		from = to88(from);
+		to = to88(to);
+
+		long b = 0;
+
+		int inc = delta_inc(from, to);
+
+		if (inc != 0) {
+			for (int sq = to + inc; isValid88(sq); sq += inc) {
+				b = setBit(b, from88(sq));
+			}
+		}
+
+		return b;
+	}
+
+	/**
+	 * Create the behind bit array
+	 */
+	public static void initBehind() {
+		behind = new long[64][64];
+		for (int i = 0; i < 64; i++) {
+			for (int j = 0; j < 64; j++) {
+				behind[i][j] = behindInit(i, j);
+			}
+		}
+	}
+
+	
+	
+	/**
+	 * Check if it is a valid s88 square
+	 * 
+	 * @param s88
+	 * @return
+	 */
+	public static boolean isValid88(int s88) {
+		if (from88(s88) != -1){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Get the 0x88 notation from index
+	 * 
+	 * @param index
+	 * @return
+	 */
+
+	public static int to88(int index) {
+		return Commons.INDEX_TO_88[index];
+	}
+
+	/**
+	 * Returns the index of a square from 0x88 notation.
+	 * 
+	 * @param int88
+	 * @return a valid index or -1 of not.
+	 */
+	public static int from88(int int88) {
+		for (int i = 0; i < 64; i++) {
+			if (Commons.INDEX_TO_88[i] == int88) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	/**
+	 * Find the direction from an index to an index 
+	 * 
+	 * @param from in 0x88 format
+	 * @param to in 0x88 format
+	 * @return the number to increase the index with
+	 */
+
+	public static int delta_inc(int from, int to) {
+		for (int dir = 0; dir < 8; dir++) {
+			int inc = Commons.SQUARE_DIRECTIONS88[dir];
+			for (int sq = from + inc; isValid88(sq); sq += inc) {
+				if (sq == to) {
+					System.out.println("delta_inc ret: " + inc);
+					return inc;
+				}
+			}
+		}
+		return 0;
+	}
 }
