@@ -194,7 +194,7 @@ public class Board implements Serializable {
 	}
 	
 	
-	public static long pieceAttacks(int pieceType, int from, long occupiedBitMap) {
+	public static long getPieceAttacks(int pieceType, int from, long occupiedBitMap) {
 		   assert(pieceType != Commons.PieceType.PAWN);
 		 
 		   long ts = Commons.Bitmaps.ATTACKMAP[pieceType][from];
@@ -214,6 +214,34 @@ public class Board implements Serializable {
 
 	// Behind array with behind[from][to];
 	public static long[][] behind;
+	public static long[][] between;
+	
+	/**
+	 * Init the between bitmaps
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	
+	
+	public static long betweenInit(int from, int to) {
+
+		   from = to88(from);
+		   to = to88(to);
+
+		   long b = 0;
+
+		   int inc = delta_inc(from, to);
+
+		   if (inc != 0) {
+		      for (int sq = from + inc; sq != to; sq += inc) {
+		         b = setBit(b, from88(sq));
+		      }
+		   }
+
+		   return b;
+		}
+	
 	
 
 	/**
@@ -254,6 +282,18 @@ public class Board implements Serializable {
 		}
 	}
 
+	
+	/**
+	 * Create the behind bit array
+	 */
+	public static void initBetween() {
+		between = new long[64][64];
+		for (int i = 0; i < 64; i++) {
+			for (int j = 0; j < 64; j++) {
+				between[i][j] = betweenInit(i, j);
+			}
+		}
+	}
 	
 	
 	/**
