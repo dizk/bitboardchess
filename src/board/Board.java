@@ -194,6 +194,19 @@ public class Board implements Serializable {
 	}
 	
 	
+	public static long pieceAttacks(int pieceType, int from, long occupiedBitMap) {
+		   assert(pieceType != Commons.PieceType.PAWN);
+		 
+		   long ts = Commons.Bitmaps.ATTACKMAP[pieceType][from];
+		   for (long b = occupiedBitMap & Commons.Bitmaps.BLOCKERMAP[pieceType][from]; b != 0; b &= (b - 1)) {
+		      int sq = Long.numberOfTrailingZeros(b);
+		      ts &= ~Commons.Bitmaps.BEHINDMAP[from][sq];
+		   }
+		   return ts;
+		} 
+	
+	
+	
 	//
 	// CODE BELOW HERE IS NOT IN USE. IT IS FOR GENERATING BEHIND BITMAPS
 	//
