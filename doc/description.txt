@@ -1,0 +1,1 @@
+the bitBoardRepresentation image shows how our representation of the bit board. This is nice to know the indexes and fieldnumbers.
