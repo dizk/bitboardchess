@@ -1,6 +1,8 @@
 package board;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import utils.Commons;
 
@@ -9,7 +11,6 @@ public class Board implements Serializable {
 	private static final long serialVersionUID = -6005457724438400528L;
 
 	public static long[] masks;
-
 
 	public Board() {
 		createMasks();
@@ -40,7 +41,7 @@ public class Board implements Serializable {
 	 */
 
 	public static long[][] initBitBoard() {
-		long[][] bitboard = new long[2][6];
+		long[][] bitboard = new long[2][7];
 
 		for (int i = 0; i < 6; i++) {
 			bitboard[Commons.Color.WHITE][i] = Commons.Bitmaps.WHITE_PIECES[i];
@@ -50,6 +51,20 @@ public class Board implements Serializable {
 		if (Board.masks == null) {
 			createMasks();
 		}
+
+		bitboard[Commons.Color.WHITE][6] = setBit(
+				bitboard[Commons.Color.WHITE][6], 56);
+		bitboard[Commons.Color.WHITE][6] = setBit(
+				bitboard[Commons.Color.WHITE][6], 63);
+		bitboard[Commons.Color.WHITE][6] = setBit(
+				bitboard[Commons.Color.WHITE][6], 60);
+
+		bitboard[Commons.Color.BLACK][6] = setBit(
+				bitboard[Commons.Color.BLACK][6], 0);
+		bitboard[Commons.Color.BLACK][6] = setBit(
+				bitboard[Commons.Color.BLACK][6], 4);
+		bitboard[Commons.Color.BLACK][6] = setBit(
+				bitboard[Commons.Color.BLACK][6], 7);
 
 		return bitboard;
 	}
@@ -172,77 +187,424 @@ public class Board implements Serializable {
 		return str;
 	}
 
-	public static long[][] setPieceAtPosition(long[][] board, Position pos,
+	/**
+	 * Set a piece of a type and color at a square
+	 * 
+	 * @param board
+	 *            the board
+	 * @param square
+	 *            the square to set
+	 * @param type
+	 *            the type of piece
+	 * @param color
+	 *            the color of the piece
+	 * @return the board after setting piece
+	 */
+
+	public static long[][] setPieceAtSquare(long[][] board, int square,
 			int type, int color) {
-		board[color][type] = board[color][type] | getMaskAtPosition(pos);
+		board[color][type] = board[color][type] | masks[square];
 		return board;
 
 	}
 
-	public static int getPieceAtPosition(long[][] board, Position pos, int color) {
+	/**
+	 * Remove a piece at given position of type and color
+	 * 
+	 * @param board
+	 *            the board
+	 * @param square
+	 *            the square to remove the piece from
+	 * @param type
+	 *            the type of piece
+	 * @param color
+	 *            the type of color
+	 * @return the board after removing piece
+	 */
+
+	public static long[][] removePieceAtSquare(long[][] board, int square,
+			int type, int color) {
+		board[color][type] = board[color][type] & ~masks[square];
+		return board;
+	}
+
+	/**
+	 * Remove a piece at a given position
+	 * 
+	 * @param board
+	 *            the board to remove the piece from
+	 * @param square
+	 *            the square where you want to remove the piece
+	 * @return the board after removing the piece.
+	 */
+
+	public static long[][] removePieceAtSquare(long[][] board, int square) {
 		for (int i = 0; i < 6; i++) {
-			if ((board[color][i] & getMaskAtPosition(pos)) != 0) {
+			board[Commons.Color.BLACK][i] = board[Commons.Color.BLACK][i]
+					& ~masks[square];
+			board[Commons.Color.WHITE][i] = board[Commons.Color.WHITE][i]
+					& ~masks[square];
+		}
+		return board;
+	}
+
+	/**
+	 * Get a piece at a given square
+	 * 
+	 * @param board
+	 *            the board
+	 * @param square
+	 *            the square to get the piece at.
+	 * @param color
+	 *            the color of the piece.
+	 * @return the integer representing the piecetype or -1 if nothing was
+	 *         found.
+	 */
+
+	public static int getPieceAtSquare(long[][] board, int square, int color) {
+		for (int i = 0; i < 6; i++) {
+			if ((board[color][i] & masks[square]) != 0) {
 				return i;
 			}
 		}
 		return -1;
 	}
 
+	/**
+	 * Set a bit at a given index.
+	 * 
+	 * @param bitmap
+	 *            the bitmap you want to set a bit on
+	 * @param index
+	 *            the index you want to set a bit on.
+	 * @return the new bitmap
+	 */
+
 	public static long setBit(long bitmap, int index) {
 		long b = bitmap | Board.masks[index];
 		return b;
 	}
-	
-	
-	public static long getPieceAttacks(int pieceType, int from, long occupiedBitMap) {
-		   assert(pieceType != Commons.PieceType.PAWN);
-		 
-		   long ts = Commons.Bitmaps.ATTACKMAP[pieceType][from];
-		   for (long b = occupiedBitMap & Commons.Bitmaps.BLOCKERMAP[pieceType][from]; b != 0; b &= (b - 1)) {
-		      int sq = Long.numberOfTrailingZeros(b);
-		      ts &= ~Commons.Bitmaps.BEHINDMAP[from][sq];
-		   }
-		   return ts;
-		} 
-	
-	
-	
+
+	/**
+	 * Returns a bitmap of possible attacks from a square.
+	 * 
+	 * @param pieceType
+	 *            the type of piece.
+	 * @param from
+	 *            the square the piece will attack from.
+	 * @param occupiedBitMap
+	 *            a bitmap of all occupied positions on the board.
+	 * @return a bitmap of possible attacks. WARNING ALSO INCLUDES ATTACKS AT
+	 *         YOUR OWN PIECES
+	 */
+
+	public static long getPieceAttacks(int pieceType, int from,
+			long occupiedBitMap) {
+		assert (pieceType != Commons.PieceType.PAWN);
+
+		long ts = Commons.Bitmaps.ATTACKMAP[pieceType][from];
+		for (long b = occupiedBitMap
+				& Commons.Bitmaps.BLOCKERMAP[pieceType][from]; b != 0; b &= (b - 1)) {
+			int sq = Long.numberOfTrailingZeros(b);
+			ts &= ~Commons.Bitmaps.BEHINDMAP[from][sq];
+		}
+		return ts;
+	}
+
+	/**
+	 * Find the attacks a pawn can make for a given position.
+	 * 
+	 * @param square
+	 *            the square to attack from.
+	 * @param side
+	 *            the side that attacks.
+	 * @param board
+	 *            the board to calculate on.
+	 * @return a bitmap of the attacks.
+	 */
+
+	protected static long getPawnAttacksFrom(int square, int side,
+			long[][] board) {
+		return Commons.Bitmaps.PAWN_ATTACKS[side][square]
+				& getBitMapForColor(board, oppositeSide(side));
+	}
+
+	/**
+	 * Check if a square is under attack.
+	 * 
+	 * @param square
+	 *            the square to check.
+	 * @param side
+	 *            the color under attack.
+	 * @param board
+	 *            the board to check.
+	 * @return boolean if the square is under attack or not.
+	 */
+
+	public static boolean isAttacked(int square, int side, long[][] board) {
+		if (isAttackedByPawn(square, side, board)) {
+			return true;
+		}
+
+		if (isAttackedByKnight(square, side, board)) {
+			return true;
+		}
+
+		if (isAttackedByKing(square, side, board)) {
+			return true;
+		}
+
+		if (isAttackedByRook(square, side, board)) {
+			return true;
+		}
+
+		if (isAttackedByQueen(square, side, board)) {
+			return true;
+		}
+
+		if (isAttackedByBishop(square, side, board)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	protected static boolean isAttackedByKnight(int square, int side,
+			long[][] board) {
+		return (board[oppositeSide(side)][Commons.PieceType.KNIGHT] & Commons.Bitmaps.ATTACKMAP[Commons.PieceType.KNIGHT][square]) != 0;
+	}
+
+	protected static boolean isAttackedByPawn(int square, int side,
+			long[][] board) {
+		return (board[oppositeSide(side)][Commons.PieceType.PAWN] & Commons.Bitmaps.PAWN_ATTACKS[side][square]) != 0;
+	}
+
+	protected static boolean isAttackedByKing(int square, int side,
+			long[][] board) {
+		return (board[oppositeSide(side)][Commons.PieceType.KING] & Commons.Bitmaps.ATTACKMAP[Commons.PieceType.KING][square]) != 0;
+	}
+
+	protected static boolean isAttackedByRook(int square, int side,
+			long[][] board) {
+		long bitmap = Commons.Bitmaps.ATTACKMAP[Commons.PieceType.ROOK][square]
+				& board[oppositeSide(side)][Commons.PieceType.ROOK];
+		for (long b = bitmap; b != 0; b &= (b - 1)) {
+			int from = Long.numberOfTrailingZeros(b);
+			if ((Board.getBitMap(board) & Commons.Bitmaps.BETWEENMAP[from][square]) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean isAttackedByBishop(int square, int side,
+			long[][] board) {
+		long bitmap = Commons.Bitmaps.ATTACKMAP[Commons.PieceType.BISHOP][square]
+				& board[oppositeSide(side)][Commons.PieceType.BISHOP];
+		for (long b = bitmap; b != 0; b &= (b - 1)) {
+			int from = Long.numberOfTrailingZeros(b);
+			if ((Board.getBitMap(board) & Commons.Bitmaps.BETWEENMAP[from][square]) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean isAttackedByQueen(int square, int side,
+			long[][] board) {
+		long bitmap = Commons.Bitmaps.ATTACKMAP[Commons.PieceType.QUEEN][square]
+				& board[oppositeSide(side)][Commons.PieceType.QUEEN];
+		for (long b = bitmap; b != 0; b &= (b - 1)) {
+			int from = Long.numberOfTrailingZeros(b);
+			if ((Board.getBitMap(board) & Commons.Bitmaps.BETWEENMAP[from][square]) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Get the opposite side
+	 * 
+	 * @param side
+	 * @return the other side.
+	 */
+
+	public static int oppositeSide(int side) {
+		if (side == Commons.Color.WHITE) {
+			return Commons.Color.BLACK;
+		} else {
+			return Commons.Color.WHITE;
+		}
+	}
+
+	/**
+	 * Get all pawn move from a square
+	 * 
+	 * @param square
+	 *            the square to check moves from
+	 * @param side
+	 *            the color of the pawn
+	 * @param board
+	 *            the board the check
+	 * @return a bitmap of the pawn
+	 */
+
+	public static long getPawnMovesFrom(int square, int side, long[][] board) {
+		long bitmap = 0;
+		long occupied = getBitMap(board);
+
+		if ((masks[square] & Commons.Bitmaps.RANKS[0]) != 0) {
+			return bitmap;
+		}
+
+		if ((masks[square] & Commons.Bitmaps.RANKS[7]) != 0) {
+			return bitmap;
+		}
+
+		bitmap = setBit(bitmap, square);
+		if (side == Commons.Color.WHITE) {
+			if ((masks[square] & Commons.Bitmaps.RANKS[1]) != 0) {
+				// Check if we can move forward by two.
+				if ((Commons.Bitmaps.BETWEENMAP[square][square - 24] & occupied) == 0) {
+					return bitmap >>> 16 | bitmap >>> 8;
+				} else if ((Commons.Bitmaps.BETWEENMAP[square][square - 16] & occupied) == 0) {
+					return bitmap >>> 8;
+				}
+				// Check if we can move forward by one.
+			} else if ((masks[square - 8] & occupied) == 0) {
+				return bitmap >>> 8;
+			}
+		} else {
+			if ((masks[square] & Commons.Bitmaps.RANKS[6]) != 0) {
+				// Check if we can move forward by two.
+				if ((Commons.Bitmaps.BETWEENMAP[square][square + 24] & occupied) == 0) {
+					return bitmap << 16 | bitmap << 8;
+				} else if ((Commons.Bitmaps.BETWEENMAP[square][square + 16] & occupied) == 0) {
+					return bitmap << 8;
+				}
+				// Check if we can move forward by one.
+			} else if ((masks[square + 8] & occupied) == 0) {
+				return bitmap << 8;
+			}
+		}
+		return 0;
+	}
+
+	protected static int getKingIndex(int side, long[][] board) {
+		long bitmap = board[side][Commons.PieceType.KING];
+		return Long.numberOfTrailingZeros(bitmap);
+	}
+
+	protected static boolean isSquareOccupied(int square, long[][] board) {
+		long bitmap = getBitMap(board);
+		return (masks[square] & bitmap) != 0;
+
+	}
+
+	/**
+	 * Get pawn attack and moves from a square
+	 * 
+	 * @param square
+	 *            from this square
+	 * @param side
+	 *            of the pawn
+	 * @param board
+	 *            the board to check
+	 * @return bitmap of the possible pawn attacks and moves
+	 */
+
+	public static long getPawnAttacksAndMoves(int square, int side,
+			long[][] board) {
+		return getPawnAttacksFrom(square, side, board)
+				| getPawnMovesFrom(square, side, board);
+	}
+
+	public static List<Move> getValidMovesForSquare(int square, int side,
+			long[][] board) {
+		List<Move> moves = new ArrayList<>();
+		int kingIndex = getKingIndex(side, board);
+		Move move = null;
+		long[][] moveBoard = board;
+
+		int type = getPieceAtSquare(board, square, side);
+		long bitmap = 0;
+		int squareTo = -1;
+
+		if (type == Commons.PieceType.PAWN) {
+			bitmap = getPawnAttacksAndMoves(square, side, board);
+		} else {
+			bitmap = getPieceAttacks(type, square, getBitMap(board))
+					& ~getBitMapForColor(board, side);
+		}
+
+		while (bitmap != 0) {
+			squareTo = Long.numberOfTrailingZeros(bitmap);
+
+			move = new Move(square, squareTo, type);
+			moveBoard = move(move, side, board);
+			if (!isAttacked(kingIndex, side, moveBoard)) {
+				moves.add(move);
+			}
+
+			bitmap &= bitmap - 1;
+		}
+
+		return moves;
+	}
+
+	/**
+	 * Just moves a piece not checking anything
+	 * 
+	 * @param move
+	 *            the move to make
+	 * @param side
+	 *            the side that makes a move
+	 * @param board
+	 *            the board to make the move on.
+	 * @return the board with the move done.
+	 */
+
+	public static long[][] move(Move move, int side, long[][] board) {
+		board = removePieceAtSquare(board, move.getFrom());
+		board = removePieceAtSquare(board, move.getTo());
+		board = setPieceAtSquare(board, move.getTo(), move.getType(), side);
+		return board;
+	}
+
 	//
 	// CODE BELOW HERE IS NOT IN USE. IT IS FOR GENERATING BEHIND BITMAPS
 	//
-	
 
 	// Behind array with behind[from][to];
 	public static long[][] behind;
 	public static long[][] between;
-	
+
 	/**
 	 * Init the between bitmaps
+	 * 
 	 * @param from
 	 * @param to
 	 * @return
 	 */
-	
-	
+
 	public static long betweenInit(int from, int to) {
 
-		   from = to88(from);
-		   to = to88(to);
+		from = to88(from);
+		to = to88(to);
 
-		   long b = 0;
+		long b = 0;
 
-		   int inc = delta_inc(from, to);
+		int inc = delta_inc(from, to);
 
-		   if (inc != 0) {
-		      for (int sq = from + inc; sq != to; sq += inc) {
-		         b = setBit(b, from88(sq));
-		      }
-		   }
-
-		   return b;
+		if (inc != 0) {
+			for (int sq = from + inc; sq != to; sq += inc) {
+				b = setBit(b, from88(sq));
+			}
 		}
-	
-	
+
+		return b;
+	}
 
 	/**
 	 * Init one of the behind bitmaps
@@ -282,7 +644,6 @@ public class Board implements Serializable {
 		}
 	}
 
-	
 	/**
 	 * Create the behind bit array
 	 */
@@ -294,8 +655,7 @@ public class Board implements Serializable {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Check if it is a valid s88 square
 	 * 
@@ -303,7 +663,7 @@ public class Board implements Serializable {
 	 * @return
 	 */
 	public static boolean isValid88(int s88) {
-		if (from88(s88) != -1){
+		if (from88(s88) != -1) {
 			return true;
 		} else {
 			return false;
@@ -335,12 +695,14 @@ public class Board implements Serializable {
 		}
 		return -1;
 	}
-	
+
 	/**
-	 * Find the direction from an index to an index 
+	 * Find the direction from an index to an index
 	 * 
-	 * @param from in 0x88 format
-	 * @param to in 0x88 format
+	 * @param from
+	 *            in 0x88 format
+	 * @param to
+	 *            in 0x88 format
 	 * @return the number to increase the index with
 	 */
 
@@ -356,4 +718,5 @@ public class Board implements Serializable {
 		}
 		return 0;
 	}
+
 }
