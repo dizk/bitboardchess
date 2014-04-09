@@ -15,7 +15,7 @@ import board.Position;
 
 public class BoardTest {
 
-	private static long[][] board;
+	private long[][] board;
 
 	/**
 	 * We need a board for every test
@@ -403,9 +403,9 @@ public class BoardTest {
 		// White
 
 		long bitmap = 0;
-		BoardTest.board = Board.setPieceAtSquare(board, 32,
+		board = Board.setPieceAtSquare(board, 32,
 				Commons.PieceType.BISHOP, Commons.Color.BLACK);
-		BoardTest.board = Board.setPieceAtSquare(board, 34,
+		board = Board.setPieceAtSquare(board, 34,
 				Commons.PieceType.BISHOP, Commons.Color.BLACK);
 
 		bitmap = 0;
@@ -445,9 +445,9 @@ public class BoardTest {
 		for (int i = 49; i < 55; i++) {
 			bitmap = 0;
 			board = Board.initBitBoard();
-			BoardTest.board = Board.setPieceAtSquare(board, i - 9,
+			board = Board.setPieceAtSquare(board, i - 9,
 					Commons.PieceType.BISHOP, Commons.Color.BLACK);
-			BoardTest.board = Board.setPieceAtSquare(board, i - 7,
+			board = Board.setPieceAtSquare(board, i - 7,
 					Commons.PieceType.BISHOP, Commons.Color.BLACK);
 			bitmap = Board.setBit(bitmap, i - 8);
 			bitmap = Board.setBit(bitmap, i - 16);
@@ -462,9 +462,9 @@ public class BoardTest {
 		for (int i = 9; i < 15; i++) {
 			bitmap = 0;
 			board = Board.initBitBoard();
-			BoardTest.board = Board.setPieceAtSquare(board, i + 9,
+			board = Board.setPieceAtSquare(board, i + 9,
 					Commons.PieceType.BISHOP, Commons.Color.WHITE);
-			BoardTest.board = Board.setPieceAtSquare(board, i + 7,
+			board = Board.setPieceAtSquare(board, i + 7,
 					Commons.PieceType.BISHOP, Commons.Color.WHITE);
 			bitmap = Board.setBit(bitmap, i + 8);
 			bitmap = Board.setBit(bitmap, i + 16);
@@ -661,20 +661,55 @@ public class BoardTest {
 		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtSquare(board, 40, Commons.Color.WHITE));
 		assertFalse(Board.isSquareOccupied(48, board));
 		
+		// Testing double moves
+		
+		// Castling
+		
+		board = Board.removePieceAtSquare(board, 61);
+		board = Board.removePieceAtSquare(board, 62);
+		
+		Move move = new Move(60, 62, Commons.PieceType.KING, new Move(63, 61, Commons.PieceType.ROOK));
+		
+		
+		board = Board.move(move, Commons.Color.WHITE, board);
+		
+		assertEquals(Commons.PieceType.ROOK, Board.getPieceAtSquare(board, 61, Commons.Color.WHITE));
+		assertEquals(Commons.PieceType.KING, Board.getPieceAtSquare(board, 62, Commons.Color.WHITE));
+		assertFalse(Board.isSquareOccupied(60, board));
+		assertFalse(Board.isSquareOccupied(63, board));
+		
+		// En passant(ish)
+		
+		board = Board.setPieceAtSquare(board, 40, Commons.PieceType.PAWN, Commons.Color.BLACK);
+		move = new Move(48, 32, Commons.PieceType.PAWN, new Move(40, -1, Commons.PieceType.PAWN));
+
+		board = Board.move(move, Commons.Color.WHITE, board);
+
+		assertEquals(Commons.PieceType.PAWN, Board.getPieceAtSquare(board, 32, Commons.Color.WHITE));
+		assertFalse(Board.isSquareOccupied(40, board));
+		assertFalse(Board.isSquareOccupied(48, board));
+		
 		
 	}
 	
 	@Test
 	public void speedTest(){
+		board = Board.initBitBoard();
+		
 		List<Move> moves = null;
 		
 		long time = System.nanoTime();
 		
-		for (int i = 0; i < 5000000; i++){
+		for (int i = 0; i < 1; i++){
 			for (int j = 48; j < 64; j++){
 				moves = Board.getValidMovesForSquare(j, Commons.Color.WHITE, board);
+				System.out.println(Board.getString(Board.getBitMap(board)));
 			}
+			
+			System.out.println(Board.getString(Board.getBitMap(board)));
+			
 			for (int j = 0; j < 16; j++){
+				System.out.println(j);
 				moves = Board.getValidMovesForSquare(j, Commons.Color.BLACK, board);
 			}	
 			
@@ -684,7 +719,17 @@ public class BoardTest {
 		
 	}
 	
-	
+	@Test
+	public void testRemoveAtSquare(){
+		board = Board.removePieceAtSquare(board, 48);
+		
+		assertFalse(Board.isSquareOccupied(48, board));
+		
+		
+		
+		
+		
+	}
 	
 	
 	

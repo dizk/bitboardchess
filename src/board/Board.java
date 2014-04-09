@@ -300,7 +300,6 @@ public class Board implements Serializable {
 
 	public static long getPieceAttacks(int pieceType, int from,
 			long occupiedBitMap) {
-		assert (pieceType != Commons.PieceType.PAWN);
 
 		long ts = Commons.Bitmaps.ATTACKMAP[pieceType][from];
 		for (long b = occupiedBitMap
@@ -525,7 +524,7 @@ public class Board implements Serializable {
 		List<Move> moves = new ArrayList<>();
 		int kingIndex = getKingIndex(side, board);
 		Move move = null;
-		long[][] moveBoard = board;
+		long[][] moveBoard = null;
 
 		int type = getPieceAtSquare(board, square, side);
 		long bitmap = 0;
@@ -539,10 +538,11 @@ public class Board implements Serializable {
 		}
 
 		while (bitmap != 0) {
+			moveBoard = board;
 			squareTo = Long.numberOfTrailingZeros(bitmap);
 
 			move = new Move(square, squareTo, type);
-			moveBoard = move(move, side, board);
+			moveBoard = move(move, side, moveBoard);
 			if (!isAttacked(kingIndex, side, moveBoard)) {
 				moves.add(move);
 			}
@@ -566,8 +566,20 @@ public class Board implements Serializable {
 	 */
 
 	public static long[][] move(Move move, int side, long[][] board) {
+		// Remove the pieces
 		board = removePieceAtSquare(board, move.getFrom());
 		board = removePieceAtSquare(board, move.getTo());
+		
+		if (move.hasExtraMove()){
+			if (move.getExtraMove().getTo() != -1){
+				move(move.getExtraMove(), side, board);				
+			} else {
+				board = removePieceAtSquare(board, move.getExtraMove().getFrom());
+			}
+		}
+		
+		
+		// Set the pieces
 		board = setPieceAtSquare(board, move.getTo(), move.getType(), side);
 		return board;
 	}

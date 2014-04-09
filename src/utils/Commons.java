@@ -100,6 +100,7 @@ public class Commons {
 		 * You probably dont need to look at anything below this. Its kinda crazy.
 		 */
 
+		
 		public static final long[][] PAWN_ATTACKS = {
 			
 			{	

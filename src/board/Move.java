@@ -6,11 +6,19 @@ public class Move {
 	private int to;
 	private int from;
 	private int type;
+	private Move extraMove = null;
 	
 	public Move(int from, int to, int type){
 		this.from = from;
 		this.to = to;
 		this.type = type;
+	}
+	
+	public Move(int from, int to, int type, Move move){
+		this.from = from;
+		this.to = to;
+		this.type = type;
+		this.extraMove = move;
 	}
 
 	
@@ -24,6 +32,18 @@ public class Move {
 	
 	public int getType(){
 		return type;
+	}
+	
+	public boolean hasExtraMove(){
+		if (extraMove == null){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	public Move getExtraMove(){
+		return extraMove;
 	}
 	
 	
