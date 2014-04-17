@@ -2,6 +2,7 @@ package board;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import utils.Commons;
@@ -521,6 +522,7 @@ public class Board implements Serializable {
 
 	public static List<Move> getValidMovesForSquare(int square, int side,
 			long[][] board) {
+
 		List<Move> moves = new ArrayList<>();
 		int kingIndex = getKingIndex(side, board);
 		Move move = null;
@@ -529,25 +531,29 @@ public class Board implements Serializable {
 		int type = getPieceAtSquare(board, square, side);
 		long bitmap = 0;
 		int squareTo = -1;
+		
+		if (type == -1){
+			return null;
+		}
 
 		if (type == Commons.PieceType.PAWN) {
 			bitmap = getPawnAttacksAndMoves(square, side, board);
 		} else {
 			bitmap = getPieceAttacks(type, square, getBitMap(board))
-					& ~getBitMapForColor(board, side);
+					 & ~getBitMapForColor(board, side);
 		}
+		
 
 		while (bitmap != 0) {
-			moveBoard = board;
+			moveBoard = deepCopy2DArray(board);
 			squareTo = Long.numberOfTrailingZeros(bitmap);
-
 			move = new Move(square, squareTo, type);
 			moveBoard = move(move, side, moveBoard);
 			if (!isAttacked(kingIndex, side, moveBoard)) {
 				moves.add(move);
 			}
 
-			bitmap &= bitmap - 1;
+			bitmap &= (bitmap - 1);
 		}
 
 		return moves;
@@ -582,6 +588,20 @@ public class Board implements Serializable {
 		// Set the pieces
 		board = setPieceAtSquare(board, move.getTo(), move.getType(), side);
 		return board;
+	}
+	
+	/**
+	 * Can copy a 2D array.
+	 * @param array the 2D array to copy
+	 * @return the 2D array cloned. 
+	 */
+	
+	public static long[][] deepCopy2DArray(long[][] array){
+		long[][] ret = new long[array.length][];
+		for(int i = 0; i < array.length; i++){
+			ret[i] = Arrays.copyOf(array[i], array[i].length);
+		}
+		return ret;
 	}
 
 	//
