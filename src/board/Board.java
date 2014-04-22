@@ -121,36 +121,6 @@ public class Board implements Serializable {
 	}
 
 	/**
-	 * This will return the index to use in the mask array to get a mask for
-	 * this position.
-	 * 
-	 * @param position
-	 * @return
-	 */
-	public static int getIndexAtPosition(Position position) {
-		return (position.getRank() << 3) + position.getFile();
-	}
-
-	/**
-	 * Return a mask of the position, if the position is valid.
-	 * 
-	 * @param The
-	 *            Position you want a mask for
-	 * @return the mask of the position
-	 */
-
-	public static long getMaskAtPosition(Position pos) {
-		int index = getIndexAtPosition(pos);
-
-		if (isValidIndex(index)) {
-			return Board.masks[index];
-		}
-
-		return -1;
-
-	}
-
-	/**
 	 * Check if a square index is valid
 	 * 
 	 * @param index

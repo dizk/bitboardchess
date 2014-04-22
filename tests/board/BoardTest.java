@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import utils.Commons;
 import board.Board;
-import board.Position;
 
 public class BoardTest {
 
@@ -63,43 +62,6 @@ public class BoardTest {
 
 		assertEquals(sum, bitmap);
 
-	}
-
-	@Test
-	public void testGetMaskIndexAtPosition() {
-		// Testing the two end-points
-		assertEquals(63, Board.getIndexAtPosition(new Position(7, 7)));
-		assertEquals(0, Board.getIndexAtPosition(new Position(0, 0)));
-
-		// Check for consistency
-		board = Board.initBitBoard();
-
-		Board.getIndexAtPosition(new Position(4, 4));
-
-		assertArrayEquals(board, Board.initBitBoard());
-
-	}
-
-	@Test
-	public void testGetMaskAtPosition() {
-		// Testing some positions it is only powers of two anyway ^^
-		assertEquals(1L, Board.getMaskAtPosition(new Position(0, 0)));
-		assertEquals(2L, Board.getMaskAtPosition(new Position(1, 0)));
-		assertEquals(4L, Board.getMaskAtPosition(new Position(2, 0)));
-		assertEquals(8L, Board.getMaskAtPosition(new Position(3, 0)));
-		assertEquals(16L, Board.getMaskAtPosition(new Position(4, 0)));
-		assertEquals(32L, Board.getMaskAtPosition(new Position(5, 0)));
-		assertEquals(64L, Board.getMaskAtPosition(new Position(6, 0)));
-		assertEquals(128L, Board.getMaskAtPosition(new Position(7, 0)));
-		assertEquals(256L, Board.getMaskAtPosition(new Position(0, 1)));
-		assertEquals(512L, Board.getMaskAtPosition(new Position(1, 1)));
-
-		// Check for consistency
-		board = Board.initBitBoard();
-
-		Board.getMaskAtPosition(new Position(4, 4));
-
-		assertArrayEquals(board, Board.initBitBoard());
 	}
 
 	@Test
