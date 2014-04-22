@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import board.Position;
 public class BoardTest {
 
 	private long[][] board;
+	private Stack<long[][]> undoStack;
 
 	/**
 	 * We need a board for every test
@@ -24,6 +26,7 @@ public class BoardTest {
 	@Before
 	public void setUp() {
 		board = Board.initBitBoard();
+		undoStack = new Stack<>();
 	}
 
 	/**
@@ -73,7 +76,8 @@ public class BoardTest {
 
 		Board.getIndexAtPosition(new Position(4, 4));
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
+
 	}
 
 	@Test
@@ -95,7 +99,7 @@ public class BoardTest {
 
 		Board.getMaskAtPosition(new Position(4, 4));
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 	}
 
 	@Test
@@ -110,7 +114,7 @@ public class BoardTest {
 
 		Board.getString(bitmap);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -136,7 +140,7 @@ public class BoardTest {
 		Board.getBitMapForColor(board, Commons.Color.WHITE);
 		Board.getBitMapForColor(board, Commons.Color.BLACK);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -172,7 +176,7 @@ public class BoardTest {
 		Board.getBitMapForType(board, Commons.PieceType.QUEEN);
 		Board.getBitMapForType(board, Commons.PieceType.ROOK);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -240,7 +244,7 @@ public class BoardTest {
 		Board.getPieceAtSquare(board, 8, Commons.Color.BLACK);
 		Board.getPieceAtSquare(board, 50, Commons.Color.WHITE);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 	}
 
 	@Test
@@ -277,7 +281,7 @@ public class BoardTest {
 			Board.isAttackedByPawn(i, Commons.Color.WHITE, board);
 		}
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -315,7 +319,7 @@ public class BoardTest {
 		Board.isAttackedByKnight(45, Commons.Color.BLACK, board);
 		Board.isAttackedByKnight(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 	}
 
 	@Test
@@ -351,7 +355,7 @@ public class BoardTest {
 		Board.isAttackedByKing(45, Commons.Color.BLACK, board);
 		Board.isAttackedByKing(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -386,7 +390,7 @@ public class BoardTest {
 		Board.isAttackedByRook(45, Commons.Color.BLACK, board);
 		Board.isAttackedByRook(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 	}
 
 	@Test
@@ -419,7 +423,7 @@ public class BoardTest {
 		Board.isAttackedByBishop(45, Commons.Color.BLACK, board);
 		Board.isAttackedByBishop(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -455,7 +459,7 @@ public class BoardTest {
 		Board.isAttackedByQueen(45, Commons.Color.BLACK, board);
 		Board.isAttackedByQueen(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -516,7 +520,7 @@ public class BoardTest {
 		Board.getPawnMovesFrom(45, Commons.Color.BLACK, board);
 		Board.getPawnMovesFrom(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -557,12 +561,18 @@ public class BoardTest {
 		assertEquals(bitmap,
 				Board.getPawnAttacksFrom(43, Commons.Color.BLACK, board));
 
-		// Cleanup
+		// Black en passant
+		Move move = null;
+		board = Board.initBitBoard();
 
-		board = Board.removePieceAtSquare(board, 32, Commons.PieceType.BISHOP,
+		board = Board.setPieceAtSquare(board, 33, Commons.PieceType.PAWN,
 				Commons.Color.BLACK);
-		board = Board.removePieceAtSquare(board, 34, Commons.PieceType.BISHOP,
-				Commons.Color.BLACK);
+		move = new Move(48, 32, Commons.PieceType.PAWN);
+
+		board = Board.move(move, Commons.Color.WHITE, board);
+
+		assertEquals(1, Long.bitCount(Board.getPawnAttacksFrom(33,
+				Commons.Color.BLACK, board)));
 
 		// Check for consistency
 		board = Board.initBitBoard();
@@ -572,7 +582,7 @@ public class BoardTest {
 		Board.getPawnAttacksFrom(45, Commons.Color.BLACK, board);
 		Board.getPawnAttacksFrom(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -615,6 +625,89 @@ public class BoardTest {
 
 		}
 
+		// Black en passant
+		Move move = null;
+		board = Board.initBitBoard();
+
+		board = Board.setPieceAtSquare(board, 33, Commons.PieceType.PAWN,
+				Commons.Color.BLACK);
+		move = new Move(48, 32, Commons.PieceType.PAWN);
+
+		board = Board.move(move, Commons.Color.WHITE, board);
+
+		assertEquals(2, Long.bitCount(Board.getPawnAttacksAndMoves(33,
+				Commons.Color.BLACK, board)));
+
+		for (int i = 33; i < 39; i++) {
+			board = Board.initBitBoard();
+
+			board = Board.setPieceAtSquare(board, i, Commons.PieceType.PAWN,
+					Commons.Color.BLACK);
+			move = new Move(i + 15, i + 7, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.WHITE, board);
+
+			move = new Move(i + 17, i + 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.WHITE, board);
+
+			assertEquals(3, Long.bitCount(Board.getPawnAttacksAndMoves(i,
+					Commons.Color.BLACK, board)));
+		}
+
+		for (int i = 33; i < 39; i++) {
+			board = Board.initBitBoard();
+
+			board = Board.setPieceAtSquare(board, i, Commons.PieceType.PAWN,
+					Commons.Color.BLACK);
+			move = new Move(i + 15, i - 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.WHITE, board);
+
+			move = new Move(i + 17, i + 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.WHITE, board);
+
+			assertEquals(2, Long.bitCount(Board.getPawnAttacksAndMoves(i,
+					Commons.Color.BLACK, board)));
+		}
+
+		// White en passant
+
+		for (int i = 25; i < 31; i++) {
+			board = Board.initBitBoard();
+
+			board = Board.setPieceAtSquare(board, i, Commons.PieceType.PAWN,
+					Commons.Color.WHITE);
+			move = new Move(i - 17, i - 9, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.BLACK, board);
+
+			move = new Move(i - 15, i + 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.BLACK, board);
+
+			assertEquals(3, Long.bitCount(Board.getPawnAttacksAndMoves(i,
+					Commons.Color.WHITE, board)));
+		}
+
+		for (int i = 25; i < 31; i++) {
+			board = Board.initBitBoard();
+
+			board = Board.setPieceAtSquare(board, i, Commons.PieceType.PAWN,
+					Commons.Color.WHITE);
+			move = new Move(i - 17, i - 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.BLACK, board);
+
+			move = new Move(i - 15, i + 1, Commons.PieceType.PAWN);
+
+			board = Board.move(move, Commons.Color.BLACK, board);
+
+			assertEquals(2, Long.bitCount(Board.getPawnAttacksAndMoves(i,
+					Commons.Color.WHITE, board)));
+		}
+
 		// Check for consistency
 		board = Board.initBitBoard();
 
@@ -623,7 +716,7 @@ public class BoardTest {
 		Board.getPawnAttacksAndMoves(45, Commons.Color.BLACK, board);
 		Board.getPawnAttacksAndMoves(47, Commons.Color.BLACK, board);
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -759,6 +852,48 @@ public class BoardTest {
 
 		assertTrue(moves.isEmpty());
 
+		// Queenside castle white
+		board = Board.initBitBoard();
+
+		board = Board.removePieceAtSquare(board, 57);
+		board = Board.removePieceAtSquare(board, 58);
+		board = Board.removePieceAtSquare(board, 59);
+
+		moves = Board.getValidMovesForSquare(60, Commons.Color.WHITE, board);
+
+		assertEquals(2, moves.size());
+
+		// Kingside castle white
+		board = Board.initBitBoard();
+
+		board = Board.removePieceAtSquare(board, 61);
+		board = Board.removePieceAtSquare(board, 62);
+
+		moves = Board.getValidMovesForSquare(60, Commons.Color.WHITE, board);
+
+		assertEquals(2, moves.size());
+
+		// Queenside castle black
+		board = Board.initBitBoard();
+
+		board = Board.removePieceAtSquare(board, 1);
+		board = Board.removePieceAtSquare(board, 2);
+		board = Board.removePieceAtSquare(board, 3);
+
+		moves = Board.getValidMovesForSquare(4, Commons.Color.BLACK, board);
+
+		assertEquals(2, moves.size());
+
+		// Kingside castle black
+		board = Board.initBitBoard();
+
+		board = Board.removePieceAtSquare(board, 5);
+		board = Board.removePieceAtSquare(board, 6);
+
+		moves = Board.getValidMovesForSquare(4, Commons.Color.BLACK, board);
+
+		assertEquals(2, moves.size());
+
 		// Check for consistency
 		board = Board.initBitBoard();
 
@@ -766,7 +901,7 @@ public class BoardTest {
 			Board.getValidMovesForSquare(i, Commons.Color.WHITE, board);
 		}
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -796,7 +931,7 @@ public class BoardTest {
 			Board.isSquareOccupied(i, board);
 		}
 
-		assertEquals(board, Board.initBitBoard());
+		assertArrayEquals(board, Board.initBitBoard());
 
 	}
 
@@ -829,19 +964,38 @@ public class BoardTest {
 		assertFalse(Board.isSquareOccupied(60, board));
 		assertFalse(Board.isSquareOccupied(63, board));
 
-		// En passant(ish)
-
-		board = Board.setPieceAtSquare(board, 40, Commons.PieceType.PAWN,
+		// En passant
+		board = Board.setPieceAtSquare(board, 33, Commons.PieceType.PAWN,
 				Commons.Color.BLACK);
-		move = new Move(48, 32, Commons.PieceType.PAWN, new Move(40, -1,
-				Commons.PieceType.PAWN));
+		move = new Move(48, 32, Commons.PieceType.PAWN);
+
+		board = Board.move(move, Commons.Color.WHITE, board);
+
+		move = new Move(33, 40, Commons.PieceType.PAWN);
+
+		board = Board.move(move, Commons.Color.BLACK, board);
+
+		assertEquals(Commons.PieceType.PAWN,
+				Board.getPieceAtSquare(board, 40, Commons.Color.BLACK));
+		assertFalse(Board.isSquareOccupied(33, board));
+		assertFalse(Board.isSquareOccupied(32, board));
+		assertFalse(Board.isSquareOccupied(48, board));
+
+		board = Board.setPieceAtSquare(board, 27, Commons.PieceType.PAWN,
+				Commons.Color.WHITE);
+		move = new Move(12, 28, Commons.PieceType.PAWN);
+
+		board = Board.move(move, Commons.Color.BLACK, board);
+
+		move = new Move(27, 20, Commons.PieceType.PAWN);
 
 		board = Board.move(move, Commons.Color.WHITE, board);
 
 		assertEquals(Commons.PieceType.PAWN,
-				Board.getPieceAtSquare(board, 32, Commons.Color.WHITE));
-		assertFalse(Board.isSquareOccupied(40, board));
-		assertFalse(Board.isSquareOccupied(48, board));
+				Board.getPieceAtSquare(board, 20, Commons.Color.WHITE));
+		assertFalse(Board.isSquareOccupied(28, board));
+		assertFalse(Board.isSquareOccupied(27, board));
+		assertFalse(Board.isSquareOccupied(12, board));
 
 	}
 
@@ -849,26 +1003,13 @@ public class BoardTest {
 	public void speedTest() {
 		board = Board.initBitBoard();
 
-		List<Move> moves = null;
-
 		long time = System.nanoTime();
+		int plies = 6;
 
-		for (int i = 0; i < 1000000; i++) {
-			for (int j = 48; j < 64; j++) {
-				moves = Board.getValidMovesForSquare(j, Commons.Color.WHITE,
-						board);
-			}
+		perft(plies, Commons.Color.WHITE);
 
-
-			for (int j = 0; j < 16; j++) {
-				moves = Board.getValidMovesForSquare(j, Commons.Color.BLACK,
-						board);
-			}
-
-		}
-
-		System.out.printf("Used %d seconds \n",
-				((System.nanoTime() - time) / 1000000000));
+		System.out.printf("Used %d seconds for %d plies \n",
+				((System.nanoTime() - time) / 1000000000), plies);
 
 	}
 
@@ -877,6 +1018,81 @@ public class BoardTest {
 		board = Board.removePieceAtSquare(board, 48);
 		assertFalse(Board.isSquareOccupied(48, board));
 
+	}
+
+	@Test
+	public void testGetValidMovesForColor() {
+		List<Move> moves = Board.getValidMovesForColor(Commons.Color.WHITE,
+				board);
+		assertEquals(20, moves.size());
+
+		moves = Board.getValidMovesForColor(Commons.Color.BLACK, board);
+		assertEquals(20, moves.size());
+
+	}
+
+	@Test
+	public void perftTest() {
+		assertEquals(1, perft(0, Commons.Color.WHITE));
+		assertEquals(400, perft(2, Commons.Color.WHITE));
+		assertEquals(8902, perft(3, Commons.Color.WHITE));
+		assertEquals(197281, perft(4, Commons.Color.WHITE));
+//		assertEquals(4865609, perft(5, Commons.Color.WHITE));
+//		assertEquals(119060324, perft(6, Commons.Color.WHITE));
+
+		// https://chessprogramming.wikispaces.com/Perft+Results Position 3
+
+		board = new long[2][7];
+
+		Board.setPieceAtSquare(board, 54, Commons.PieceType.PAWN,
+				Commons.Color.WHITE);
+		Board.setPieceAtSquare(board, 52, Commons.PieceType.PAWN,
+				Commons.Color.WHITE);
+		Board.setPieceAtSquare(board, 25, Commons.PieceType.PAWN,
+				Commons.Color.WHITE);
+
+		Board.setPieceAtSquare(board, 24, Commons.PieceType.KING,
+				Commons.Color.WHITE);
+		Board.setPieceAtSquare(board, 33, Commons.PieceType.ROOK,
+				Commons.Color.WHITE);
+
+		Board.setPieceAtSquare(board, 19, Commons.PieceType.PAWN,
+				Commons.Color.BLACK);
+		Board.setPieceAtSquare(board, 37, Commons.PieceType.PAWN,
+				Commons.Color.BLACK);
+		Board.setPieceAtSquare(board, 10, Commons.PieceType.PAWN,
+				Commons.Color.BLACK);
+
+		Board.setPieceAtSquare(board, 31, Commons.PieceType.ROOK,
+				Commons.Color.BLACK);
+		Board.setPieceAtSquare(board, 39, Commons.PieceType.KING,
+				Commons.Color.BLACK);
+
+		assertEquals(14, perft(1, Commons.Color.WHITE));
+		assertEquals(191, perft(2, Commons.Color.WHITE));
+		assertEquals(2812, perft(3, Commons.Color.WHITE));
+		assertEquals(43238, perft(4, Commons.Color.WHITE));
+		assertEquals(674624, perft(5, Commons.Color.WHITE));
+//		assertEquals(11030083, perft(6, Commons.Color.WHITE));
+//		assertEquals(178633661, perft(7, Commons.Color.WHITE));
+
+	}
+
+	public long perft(int depth, int side) {
+		long nodes = 0;
+
+		if (depth == 0)
+			return 1;
+
+		List<Move> moves = Board.getValidMovesForColor(side, board);
+		for (Move m : moves) {
+			undoStack.push(Board.deepCopy2DArray(board));
+			board = Board.move(m, side, board);
+			nodes += perft(depth - 1, Board.oppositeSide(side));
+			board = undoStack.pop();
+		}
+
+		return nodes;
 	}
 
 }

@@ -326,6 +326,8 @@ public class Board implements Serializable {
 	protected static long getPawnAttacksFrom(int square, int side,
 			long[][] board) {
 		return Commons.Bitmaps.PAWN_ATTACKS[side][square]
+				& board[oppositeSide(side)][6]
+				| Commons.Bitmaps.PAWN_ATTACKS[side][square]
 				& getBitMapForColor(board, oppositeSide(side));
 	}
 
@@ -520,36 +522,175 @@ public class Board implements Serializable {
 				| getPawnMovesFrom(square, side, board);
 	}
 
+	/**
+	 * Get all valid moves from a square
+	 * 
+	 * @param square
+	 * @param side
+	 * @param board
+	 * @return a list of valid moves
+	 */
+
 	public static List<Move> getValidMovesForSquare(int square, int side,
 			long[][] board) {
+		
+		// TODO refactor
 
 		List<Move> moves = new ArrayList<>();
-		int kingIndex = getKingIndex(side, board);
 		Move move = null;
 		long[][] moveBoard = null;
 
 		int type = getPieceAtSquare(board, square, side);
 		long bitmap = 0;
 		int squareTo = -1;
-		
-		if (type == -1){
+
+		if (type == -1) {
 			return null;
 		}
 
-		if (type == Commons.PieceType.PAWN) {
+		switch (type) {
+		case Commons.PieceType.PAWN:
 			bitmap = getPawnAttacksAndMoves(square, side, board);
-		} else {
+
+			// Promotion
+			// White
+			if (side == Commons.Color.WHITE) {
+				if ((bitmap & Commons.Bitmaps.RANKS[7]) != 0) {
+					while (bitmap != 0) {
+						moveBoard = deepCopy2DArray(board);
+						squareTo = Long.numberOfTrailingZeros(bitmap);
+						move = new Move(square, squareTo,
+								Commons.PieceType.ROOK);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.QUEEN);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.KNIGHT);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.BISHOP);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+
+						bitmap &= (bitmap - 1);
+					}
+
+					return moves;
+				}
+			} else {
+				// Black
+				if ((bitmap & Commons.Bitmaps.RANKS[0]) != 0) {
+					while (bitmap != 0) {
+						moveBoard = deepCopy2DArray(board);
+						squareTo = Long.numberOfTrailingZeros(bitmap);
+						move = new Move(square, squareTo,
+								Commons.PieceType.ROOK);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.QUEEN);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.KNIGHT);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+						move = new Move(square, squareTo,
+								Commons.PieceType.BISHOP);
+						moveBoard = move(move, side, moveBoard);
+						if (!isAttacked(getKingIndex(side, moveBoard), side,
+								moveBoard)) {
+							moves.add(move);
+						}
+
+						bitmap &= (bitmap - 1);
+					}
+
+					return moves;
+				}
+			}
+
+			break;
+
+		case Commons.PieceType.KING:
 			bitmap = getPieceAttacks(type, square, getBitMap(board))
-					 & ~getBitMapForColor(board, side);
+					& ~getBitMapForColor(board, side);
+
+			// Check if king has moved
+			if ((board[side][Commons.PieceType.KING] & board[side][6]) != 0) {
+				if (side == Commons.Color.WHITE) {
+					// Check if rook has moved
+					if ((masks[56] & board[side][6]) != 0) {
+						if ((Commons.Bitmaps.BETWEENMAP[56][60] & getBitMap(board)) == 0) {
+							moves.add(new Move(60, 57, Commons.PieceType.KING,
+									new Move(56, 58, Commons.PieceType.ROOK)));
+						}
+					}
+
+					if ((masks[63] & board[side][6]) != 0) {
+						if ((Commons.Bitmaps.BETWEENMAP[60][63] & getBitMap(board)) == 0) {
+							moves.add(new Move(60, 62, Commons.PieceType.KING,
+									new Move(63, 61, Commons.PieceType.ROOK)));
+						}
+					}
+				} else {
+
+					// Check if rook has moved
+					if ((masks[0] & board[side][6]) != 0) {
+						if ((Commons.Bitmaps.BETWEENMAP[0][4] & getBitMap(board)) == 0) {
+							moves.add(new Move(4, 1, Commons.PieceType.KING,
+									new Move(0, 2, Commons.PieceType.ROOK)));
+						}
+					}
+
+					if ((masks[7] & board[side][6]) != 0) {
+						if ((Commons.Bitmaps.BETWEENMAP[4][7] & getBitMap(board)) == 0) {
+							moves.add(new Move(4, 6, Commons.PieceType.KING,
+									new Move(7, 5, Commons.PieceType.ROOK)));
+						}
+					}
+				}
+
+			}
+
+			break;
+
+		default:
+			bitmap = getPieceAttacks(type, square, getBitMap(board))
+					& ~getBitMapForColor(board, side);
 		}
-		
 
 		while (bitmap != 0) {
 			moveBoard = deepCopy2DArray(board);
 			squareTo = Long.numberOfTrailingZeros(bitmap);
 			move = new Move(square, squareTo, type);
 			moveBoard = move(move, side, moveBoard);
-			if (!isAttacked(kingIndex, side, moveBoard)) {
+			if (!isAttacked(getKingIndex(side, moveBoard), side, moveBoard)) {
 				moves.add(move);
 			}
 
@@ -557,6 +698,21 @@ public class Board implements Serializable {
 		}
 
 		return moves;
+	}
+
+	public static List<Move> getValidMovesForColor(int side, long[][] board) {
+		long bitmap = getBitMapForColor(board, side);
+		int square;
+		List<Move> moves = new ArrayList<Move>();
+
+		while (bitmap != 0) {
+			square = Long.numberOfTrailingZeros(bitmap);
+			moves.addAll(getValidMovesForSquare(square, side, board));
+			bitmap &= (bitmap - 1);
+		}
+
+		return moves;
+
 	}
 
 	/**
@@ -575,30 +731,71 @@ public class Board implements Serializable {
 		// Remove the pieces
 		board = removePieceAtSquare(board, move.getFrom());
 		board = removePieceAtSquare(board, move.getTo());
-		
-		if (move.hasExtraMove()){
-			if (move.getExtraMove().getTo() != -1){
-				move(move.getExtraMove(), side, board);				
+
+		// Clear en passant
+		if (side == Commons.Color.BLACK) {
+			board[side][6] &= ~Commons.Bitmaps.RANKS[5];
+		} else {
+			board[side][6] &= ~Commons.Bitmaps.RANKS[2];
+		}
+
+		switch (move.getType()) {
+		case Commons.PieceType.PAWN:
+			// Double push
+			if (Math.abs(move.getTo() - move.getFrom()) == 16) {
+				if (side == Commons.Color.BLACK) {
+					board[side][6] = setBit(board[side][6], move.getTo() - 8);
+				} else {
+					board[side][6] = setBit(board[side][6], move.getTo() + 8);
+				}
+			}
+
+			// If en passant move remove the right piece
+			if ((masks[move.getTo()] & board[oppositeSide(side)][6]) != 0) {
+				if (side == Commons.Color.BLACK) {
+					board = removePieceAtSquare(board, move.getTo() - 8);
+				} else {
+					board = removePieceAtSquare(board, move.getTo() + 8);
+				}
+			}
+			break;
+
+		case Commons.PieceType.KING:
+			// Clear king has moved flag
+			board[side][6] &= ~masks[move.getFrom()];
+			break;
+
+		case Commons.PieceType.ROOK:
+			// Clear rook has moved flag
+			board[side][6] &= ~masks[move.getFrom()];
+			break;
+		}
+
+		if (move.hasExtraMove()) {
+			if (move.getExtraMove().getTo() != -1) {
+				move(move.getExtraMove(), side, board);
 			} else {
-				board = removePieceAtSquare(board, move.getExtraMove().getFrom());
+				board = removePieceAtSquare(board, move.getExtraMove()
+						.getFrom());
 			}
 		}
-		
-		
+
 		// Set the pieces
 		board = setPieceAtSquare(board, move.getTo(), move.getType(), side);
 		return board;
 	}
-	
+
 	/**
 	 * Can copy a 2D array.
-	 * @param array the 2D array to copy
-	 * @return the 2D array cloned. 
+	 * 
+	 * @param array
+	 *            the 2D array to copy
+	 * @return the 2D array cloned.
 	 */
-	
-	public static long[][] deepCopy2DArray(long[][] array){
+
+	public static long[][] deepCopy2DArray(long[][] array) {
 		long[][] ret = new long[array.length][];
-		for(int i = 0; i < array.length; i++){
+		for (int i = 0; i < array.length; i++) {
 			ret[i] = Arrays.copyOf(array[i], array[i].length);
 		}
 		return ret;
